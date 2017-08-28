@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Systems Control</title>
+
+    <!-- Bootstrap -->
+    <link href="lib/css/bootstrap.min.css" rel="stylesheet">
+    <link href="lib/css/slider.css" rel="stylesheet">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="lib/js/bootstrap.min.js"></script>
+    <script src="lib/js/bootstrap-slider.js"></script>
+
+    <link href="main.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="lib/fabric.min.js"></script>
+    <!-- TODO: When ES6 fully supported, change to export/imports -->
+    <script type="text/javascript" src="models/car.js"></script>
+    <script type="text/javascript" src="models/track.js"></script>
+    <script type="text/javascript" src="models/train.js"></script>
+    <script type="text/javascript" src="models/switchlist.js"></script>
+    <script type="text/javascript" src="config/seed.js"></script>
+    <script type="text/javascript" src="controller.js"></script>
+    <script type="text/javascript" src="draw.js"></script>
+</head>
+
+<body>
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-default navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+                <a class="navbar-brand" href="#">Systems Control</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="fabric.html">Yard</a></li>
+                    <li><a id="mnuTrain" href="#">Train</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Settings<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#" data-toggle="modal" data-target="#magnifyModal">Scale</a></li>
+                            <li><a id="mnuClassColors" href="#">Class Colors</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </nav>
+    <div class="container full">
+
+        <div class="row full">
+            <div class="col-md-9 full-height">
+                <canvas id="c" width="100%" height="100%" style="border: 1px solid black;"></canvas>
+            </div>
+            <div class="col-md-3 full-height">
+                <!-- ACTION PANEL (CAROUSEL) -->
+                <div id="myCarousel" class="carousel slide most-height" data-ride="carousel">
+                    <!-- Indicators -->
+                    <ol class="carousel-indicators">
+                        <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#myCarousel" data-slide-to="1"></li>
+                        <li data-target="#myCarousel" data-slide-to="2"></li>
+                        <li data-target="#myCarousel" data-slide-to="3"></li>
+                    </ol>
+
+                    <!-- Wrapper for slides -->
+                    <div class="carousel-inner most-height" role="listbox">
+                        <div class="item active actionBar">
+                            <h4>Outbound Trains</h4>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Depart</th>
+                                        <th>Cars</th>
+                                        <th>Length</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><a id="Q671" href="#">Q67119</a></td>
+                                        <td>23:30 (-)</td>
+                                        <td>124</td>
+                                        <td>6938</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a id="Q477" href="#">Q47720</a></td>
+                                        <td>08:00</td>
+                                        <td>109</td>
+                                        <td>5794</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a id="Y222" href="#">Y22220</a></td>
+                                        <td>01:30 (+)</td>
+                                        <td>34</td>
+                                        <td>1285</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="item actionBar">
+                            <h4>Inbound Trains</h4>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>ETA</th>
+                                        <th>Cars</th>
+                                        <th>Length</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>W25320</td>
+                                        <td>10:00</td>
+                                        <td>57</td>
+                                        <td>2300</td>
+                                    </tr>
+                                    <tr>
+                                        <td>W64220</td>
+                                        <td>14:30</td>
+                                        <td>124</td>
+                                        <td>7210</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="item actionBar">
+                            <h4>Switchlists</h4>
+                            <table id="switchListTable" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Track</th>
+                                        <th>Cars</th>
+                                        <th>End</th>
+                                        <th>Execute</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="item actionBar">
+                            <h4>Testing</h4>
+                            <button type="button" id="btnClearCars" class="btn btn-default">Clear Cars</button>
+                        </div>
+                    </div>
+
+                    <!-- Left and right controls -->
+                    <a class="left carousel-control" href="#myCarousel" role="button" data-slide="prev">
+                        <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                    <a class="right carousel-control" href="#myCarousel" role="button" data-slide="next">
+                        <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+                        <span class="sr-only">Next</span>
+                    </a>
+
+                    <!-- BOTTOM ACTION BAR -->
+                    <!-- Train Info -->
+                    <div id="currentTrain" class="hidden">
+                      <table class="table table-striped">
+                          <thead>
+                              <tr>
+                                  <th>ID</th>
+                                  <th>Cars</th>
+                                  <th>Length</th>
+                                  <th>Missing</th>
+                                  <th>&nbsp;</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr>
+                                  <td><span id="currentTrainId"></span></td>
+                                  <td><span id="currentTrainCars"></span></td>
+                                  <td><span id="currentTrainLength"></span></td>
+                                  <td><span id="currentTrainMissing"></span></td>
+                                  <td><span id="currentTrainBuild">
+                                    <a href="#" id="buildTrain">
+                                      <span class='glyphicon glyphicon-equalizer'></span>
+                                    </a></span></td>
+                              </tr>
+                          </tbody>
+                      </table>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div>
+                        <button id="btnClearMarkers" type="button" class="btn btn-default btn-default">
+                          <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+                        </button>
+                    </div>
+
+                    <!-- SLIDER -->
+                    <div>
+                        <input id="sliderScale" type="text" class="slider" value="" data-slider-min="1" data-slider-max="100" data-slider-step="2" data-slider-value="30" data-slider-orientation="horizontal" data-slider-selection="after" data-slider-tooltip="hide">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Magnification/Scale Modal -->
+        <div class="modal fade" id="magnifyModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Change Scale</h4>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="btnMagnifyClose" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="btnMagnifySave" class="btn btn-primary" data-dismiss="modal">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Switchlist Modal -->
+        <div class="modal fade" id="switchListModal" tabindex="-1" role="dialog" aria-labelledby="">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">Build Switchlist(s)</h4>
+                    </div>
+                    <div class="modal-body">
+                      <table id="switchListModalTable" class="table table-striped">
+                          <thead>
+                              <tr>
+                                  <th>From Track</th>
+                                  <th>Cars</th>
+                                  <th>To Track</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                          </tbody>
+                     </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" id="btnSwitchListClose" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" id="btnSwitchListBuild" class="btn btn-primary" data-dismiss="modal">Build</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            /* RESIZE CANVAS */
+            let c = document.getElementById('c');
+            // Make it visually fill the positioned parent
+            c.style.width = '100%';
+            c.style.height = '100%';
+            // ...then set the internal size to match
+            c.width = c.offsetWidth;
+            c.height = c.offsetHeight;
+
+            // GLOBAL VARIABLES
+            let canvas = new fabric.Canvas('c');
+            let controller = new Controller();
+
+            console.log(`Canvas height: ${controller.display.canvasHeight}, width: ${controller.display.canvasWidth}`)
+
+            /* PAGE LOAD INITIALIZE */
+            $(function() {
+                // Initialize Magnification input
+                $('#inputMagnification').val(controller.getDisplay().scale);
+                $('.slider').slider('setValue', controller.getDisplay().scale * 100);
+
+            });
+
+            /* Draw Canvas */
+            run();
+
+            /* EVENT LISTENERS */
+            // Magnification Modal Save
+            $('#btnMagnifySave').on('click', function(event) {
+                let newScale = $('#inputMagnification').val();
+                setScale(newScale);
+            });
+
+            // Build Train anchor
+            $('#buildTrain').click(function(event) {
+              buildTrain();
+              $('#switchListModal').modal('toggle');
+            })
+
+            // Scale Slider
+            $('#sliderScale').on('slideStop', function(event) {
+                let newScale = event.value;
+                setScale(newScale / 100);
+            });
+
+            // Train Menu Item
+            $('#mnuTrain').on('click', function(event) {
+                event.preventDefault();
+                alert('Coming in a future release...');
+                return false;
+            });
+
+            // Class Colors Menu Item
+            $('#mnuClassColors').on('click', function(event) {
+                event.preventDefault();
+                alert('Coming in a future release...');
+                return false;
+            });
+
+            // Train clicks
+            $("#Q671").on('click', function(event) {
+                //alert("Q671 clicked");
+                findTrainCars("Q67119");
+            });
+
+            $("#Q477").on('click', function(event) {
+                findTrainCars("Q47720");
+            });
+
+            $("#Y222").on('click', function(event) {
+                findTrainCars("Y22220");
+            });
+
+            // Clear markers
+            $('#btnClearMarkers').on('click', function(event) {
+                clearSelection();
+            });
+
+            // Test
+            $('#btnClearCars').on('click', function(event) {
+                let removeCars = [
+                  new Car('CSXT 900',9,'NEX',59,30,'E'),
+                  new Car('CSXT 901',10,'NEX',59,30,'E'),
+                  new Car('CSXT 902',11,'NEX',59,30,'L')
+                ];
+                moveCars("W11", "W09", "left", removeCars) ;
+            });
+            $('#btnSwitchListBuild').on('click', function(event) {
+                buildSwitchList();
+            });
+
+        </script>
+</body>
+
+
+</html>
